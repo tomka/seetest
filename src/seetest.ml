@@ -24,6 +24,8 @@ let display msg =
 let displayln msg =
 	display msg; display "\n"
 
+(* Mode selection *)
+
 let print_menu () =
 	displayln "Bitte wähle ob du den SBF Binnen oder den SBF See testen willst.";
 	displayln "1. SBF Binnen";
@@ -45,14 +47,20 @@ let start ask =
 	print_string "\n";
 	ask ();;
 
+(* Support *)
+
 let finish () =
 	displayln "\nFragen beendet";;
+
+(* Questions *)
 
 let ask_questions_binnen () =
 	displayln "Fragen zum Sportbootführerschein Binnen";;
 
 let ask_questions_see () =
 	displayln "Fragen zum Sportbootführerschein See";;
+
+(* Main entry point *)
 
 let main () =
 	print_menu ();
