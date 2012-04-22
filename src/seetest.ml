@@ -49,8 +49,48 @@ let start ask =
 
 (* Support *)
 
+let load_config =
+    ();;
+
 let finish () =
 	displayln "\nFragen beendet";;
+
+let load_data path =
+	(* Loads data from the given path as YAML file. *)
+    displayln "Lade Daten...";
+	displayln path;
+	let chan = open_in path in
+	let content = Std.input_all chan in
+	let parser = YamlParser.make () in
+	  try
+		let root =
+		  YamlParser.parse_string
+			parser
+			content
+			(* "---\n- one\n- two\n- three\n" *)
+		in
+		  match root with
+		  | YamlNode.SCALAR (_, value) ->
+			  displayln value
+		  | YamlNode.SEQUENCE (_, nodes) ->
+			  List.iter
+				(function
+				 | YamlNode.SCALAR (_, value) ->
+					 print_endline value
+				 | _ -> ())
+				nodes
+		  | YamlNode.MAPPING ( _, map) ->
+			  List.iter
+				(function
+				 | (YamlNode.SCALAR (_, "date"), YamlNode.SCALAR (_, value)) ->
+					 (** Read out the date of the data **)
+					 displayln value;
+				 | _ -> ())
+				map
+		  | _ -> ()
+	  with YamlParser.Error (msg) ->
+		prerr_endline msg;;
+
 
 (* Questions *)
 
@@ -66,6 +106,8 @@ let main () =
 	print_menu ();
 	let mode = get_mode () in
 	if mode=mode_sbf_binnen then
+		let path = "../data/Fragenkatalog-Binnen-Mai-2012.yaml" in
+		load_data path;
 		start ask_questions_binnen
 	else if mode=mode_sbf_see then
 		start ask_questions_see
