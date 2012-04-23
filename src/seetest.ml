@@ -43,9 +43,9 @@ let rec get_mode () =
 		get_mode ()
 	end ;;
 
-let start ask =
+let start ask qnr =
 	print_string "\n";
-	ask ();;
+	ask qnr;;
 
 (* Support *)
 
@@ -55,10 +55,73 @@ let load_config =
 let finish () =
 	displayln "\nFragen beendet";;
 
-let load_data path =
+
+class question =
+	(** A question and a some answer options. One of them is the
+		correct answer, which is stored as a seperate field. **)
+object
+	val mutable text = ""
+	val mutable wrong_answers : string list = []
+	val mutable correct_answer = ""
+
+	method set_text new_text = text <- new_text
+	method set_correct_answer value = correct_answer <- value
+	method add_wrong_answer value  = wrong_answers <- value :: wrong_answers
+end;;
+
+class question_pool =
+	(** A set of related questions. **)
+object(self)
+	val mutable name = ""
+	val mutable questions = []
+
+	method get_name = name
+	method set_name new_name = name <- new_name
+	method add_question = questions <- new question :: questions; List.hd questions
+	method get_num_questions = List.length questions
+end;;
+
+class questionaire =
+	(** A question pool encapsulates a set of question pools and meta
+	    information about it. **)
+object
+	val mutable date = "(Not set)"
+	val mutable about = "(Not set)"
+	val mutable pools = []
+
+	method get_date = date
+	method set_date value = date <- value
+	method get_about = about
+	method set_about value = about <- value
+	method add_question_pool = pools <- new question_pool :: pools; List.hd pools
+	method get_num_pools = List.length pools
+end;;
+
+let load_question q seq =
+	(** Updates a question object with data from the list of mappings in seq. **)
+	List.iter (function
+		| YamlNode.MAPPING (_, map) ->
+			(
+			List.iter (function
+				| (YamlNode.SCALAR (_, "text"), YamlNode.SCALAR(_, value)) ->
+					(** Read in text of question **)
+					q#set_text value
+				| (YamlNode.SCALAR (_, "correctanswer"), YamlNode.SCALAR(_, value)) ->
+					(** Read in correct answer **)
+					q#set_correct_answer value
+				| (YamlNode.SCALAR (_, "answer"), YamlNode.SCALAR(_, value)) ->
+					(** Read in other answers **)
+					q#add_wrong_answer value
+				| _ -> ())
+				map
+			)
+		| _ -> ())
+		seq;
+		();;
+
+let load_data path qnr =
 	(* Loads data from the given path as YAML file. *)
     displayln "Lade Daten...";
-	displayln path;
 	let chan = open_in path in
 	let content = Std.input_all chan in
 	let parser = YamlParser.make () in
@@ -70,32 +133,47 @@ let load_data path =
 			(* "---\n- one\n- two\n- three\n" *)
 		in
 		  match root with
-		  | YamlNode.SCALAR (_, value) ->
-			  displayln value
-		  | YamlNode.SEQUENCE (_, nodes) ->
-			  List.iter
-				(function
-				 | YamlNode.SCALAR (_, value) ->
-					 print_endline value
-				 | _ -> ())
-				nodes
 		  | YamlNode.MAPPING ( _, map) ->
 			  List.iter
 				(function
 				 | (YamlNode.SCALAR (_, "date"), YamlNode.SCALAR (_, value)) ->
-					 (** Read out the date of the data **)
-					 displayln value;
-				 | _ -> ())
+					(** Read in the date of the data **)
+					qnr#set_date value
+				 | (YamlNode.SCALAR (_, "about"), YamlNode.SCALAR (_, value)) ->
+					(** Read in the about information of the data **)
+					qnr#set_about value
+				 | (YamlNode.SCALAR (_, "question-chapters"), YamlNode.SEQUENCE (_, values)) ->
+					(** Read in the about information of the data **)
+					List.iter (function
+						| YamlNode.MAPPING ( _, map) ->
+							begin
+							let pool = qnr#add_question_pool in
+							List.iter (function
+								| (YamlNode.SCALAR (_, "name"), YamlNode.SCALAR (_, value)) ->
+									(** Read in name of chapter  **)
+									pool#set_name value
+								| (YamlNode.SCALAR (_, "questions"), YamlNode.SEQUENCE (_, values)) ->
+									begin
+									let q = pool#add_question in
+									load_question q values
+									end
+								| _ -> ())
+								map
+							end
+						| _ -> ())
+						values
+				| _ -> ())
 				map
 		  | _ -> ()
 	  with YamlParser.Error (msg) ->
 		prerr_endline msg;;
 
-
 (* Questions *)
 
-let ask_questions_binnen () =
-	displayln "Fragen zum Sportbootführerschein Binnen";;
+let ask_questions_binnen qnr =
+	displayln "Fragen zum Sportbootführerschein Binnen";
+	let msg = string_of_int qnr#get_num_pools in
+	displayln msg;;
 
 let ask_questions_see () =
 	displayln "Fragen zum Sportbootführerschein See";;
@@ -106,11 +184,14 @@ let main () =
 	print_menu ();
 	let mode = get_mode () in
 	if mode=mode_sbf_binnen then
+		(
 		let path = "../data/Fragenkatalog-Binnen-Mai-2012.yaml" in
-		load_data path;
-		start ask_questions_binnen
+		let qnr = new questionaire in
+		load_data path qnr;
+		start ask_questions_binnen qnr
+		)
 	else if mode=mode_sbf_see then
-		start ask_questions_see
+		start ask_questions_see ()
 	else if mode=mode_exit then
 		exit 0
 	else
