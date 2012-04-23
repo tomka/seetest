@@ -64,9 +64,12 @@ object
 	val mutable wrong_answers : string list = []
 	val mutable correct_answer = ""
 
+	method get_text = text
 	method set_text new_text = text <- new_text
 	method set_correct_answer value = correct_answer <- value
+	method get_correct_answer = correct_answer
 	method add_wrong_answer value  = wrong_answers <- value :: wrong_answers
+	method get_wrong_answers = wrong_answers
 end;;
 
 class question_pool =
@@ -79,6 +82,7 @@ object(self)
 	method set_name new_name = name <- new_name
 	method add_question = questions <- new question :: questions; List.hd questions
 	method get_num_questions = List.length questions
+	method get_questions = questions
 end;;
 
 class questionaire =
@@ -95,6 +99,7 @@ object
 	method set_about value = about <- value
 	method add_question_pool = pools <- new question_pool :: pools; List.hd pools
 	method get_num_pools = List.length pools
+	method get_pools = pools
 end;;
 
 let load_question q seq =
@@ -170,10 +175,36 @@ let load_data path qnr =
 
 (* Questions *)
 
+let print_questionaire qnr =
+	let pools = qnr#get_pools in
+	let n_pools = string_of_int qnr#get_num_pools in
+	Printf.printf "Pools: %s\n" n_pools;
+	List.iter (function
+		| (p) ->
+			begin
+			let n_questions = p#get_num_questions in
+			Printf.printf "\tPool \"%s\"" p#get_name;
+			Printf.printf " with %d question(s):\n" n_questions;
+			List.iter (function
+				| (q) ->
+					begin
+					Printf.printf "\t\tQuestion: %s\n" q#get_text;
+					Printf.printf "\t\t* %s\n" q#get_correct_answer;
+					List.iter (function
+						| (a) ->
+							Printf.printf "\t\t- %s\n" a
+						| _ -> ())
+						q#get_wrong_answers
+					end
+				| _ -> ())
+				p#get_questions
+			end
+		| _ -> ())
+		pools;;
+
 let ask_questions_binnen qnr =
 	displayln "Fragen zum Sportbootführerschein Binnen";
-	let msg = string_of_int qnr#get_num_pools in
-	displayln msg;;
+	print_questionaire qnr;;
 
 let ask_questions_see () =
 	displayln "Fragen zum Sportbootführerschein See";;
