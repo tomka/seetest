@@ -1,0 +1,33 @@
+about: |
+    Sportbootführerschein
+    Binnen
+    Fragen- und Antworten-Katalog
+    für den amtlichen Sportbootführerschein
+    Ausgabe: 2011
+    (gültig für Prüfungen ab 05/2012)
+    
+    Impressum
+    Herausgeber
+    Bundesministerium für Verkehr, Bau und Stadtentwicklung
+    Referat WS 25
+    Robert-Schuman-Platz 1
+    53175 Bonn
+    Internet: http://www.bmvbs.de
+    Satz und Gestaltung / Druck
+    Bundesministerium für Verkehr, Bau und Stadtentwicklung
+    Referat Z 32, Druckvorstufe / Hausdruckerei
+    Bildnachweis
+    Horst Beck - Bundesministerium für Verkehr, Bau und Stadtentwicklung
+    Stand: November 2011
+    (Gültig für Prüfungen ab 05/2012)
+
+date: November 2011
+
+question-chapters:
+      - name: Basisfragen
+        questions:
+              - text: Was ist zu tun, wenn vor Antritt der Fahrt nicht feststeht, wer Fahrzeugführer ist?
+                correctanswer: Der verantwortliche Fahrzeugführer muss bestimmt werden.
+                answer: Der verantwortliche Fahrzeugführer muss gewählt werden.
+                answer: Ein Inhaber des Sportbootführerscheins muss die Fahrzeugführung übernehmen.
+                answer: Ein Inhaber des Sportbootführerscheins muss die Verantwortung übernehmen.
