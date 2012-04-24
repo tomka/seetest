@@ -102,11 +102,12 @@ object
 	method get_pools = pools
 end;;
 
-let load_question q seq =
+let load_question pool seq =
 	(** Updates a question object with data from the list of mappings in seq. **)
 	List.iter (function
 		| YamlNode.MAPPING (_, map) ->
 			(
+			let q = pool#add_question in
 			List.iter (function
 				| (YamlNode.SCALAR (_, "text"), YamlNode.SCALAR(_, value)) ->
 					(** Read in text of question **)
@@ -159,8 +160,7 @@ let load_data path qnr =
 									pool#set_name value
 								| (YamlNode.SCALAR (_, "questions"), YamlNode.SEQUENCE (_, values)) ->
 									begin
-									let q = pool#add_question in
-									load_question q values
+									load_question pool values
 									end
 								| _ -> ())
 								map
