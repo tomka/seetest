@@ -13,7 +13,8 @@ Printf.printf "Seetest -- Version %s\n\n" version;;
 
 let mode_sbf_binnen = 1;;
 let mode_sbf_see = 2;;
-let mode_exit = 3;;
+let mode_print_qa = 3;;
+let mode_exit = 4;;
 
 let log msg =
 	print_string msg;;
@@ -30,12 +31,13 @@ let print_menu () =
 	displayln "Bitte wähle ob du den SBF Binnen oder den SBF See testen willst.";
 	displayln "1. SBF Binnen";
 	displayln "2. SBF See";
-	displayln "3. Beenden";
+	displayln "3. Fragen und Antworden ausgeben";
+	displayln "4. Beenden";
 	display   "? " ;;
 
 let rec get_mode () =
 	let choice = read_int () in
-	let valid_choice = choice=1 || choice=2 || choice=3 in
+	let valid_choice = choice=1 || choice=2 || choice=3 || choice=4 in
 	if valid_choice then
 		choice
 	else begin
@@ -203,8 +205,7 @@ let print_questionaire qnr =
 		pools;;
 
 let ask_questions_binnen qnr =
-	displayln "Fragen zum Sportbootführerschein Binnen";
-	print_questionaire qnr;;
+	displayln "Fragen zum Sportbootführerschein Binnen";;
 
 let ask_questions_see () =
 	displayln "Fragen zum Sportbootführerschein See";;
@@ -223,6 +224,11 @@ let main () =
 		)
 	else if mode=mode_sbf_see then
 		start ask_questions_see ()
+	else if mode=mode_print_qa then
+		let path = "../data/Fragenkatalog-Binnen-Mai-2012.yaml" in
+		let qnr = new questionaire in
+		load_data path qnr;
+		print_questionaire qnr
 	else if mode=mode_exit then
 		exit 0
 	else
