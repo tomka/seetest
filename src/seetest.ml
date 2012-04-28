@@ -182,26 +182,23 @@ let print_questionaire qnr =
 	let n_pools = string_of_int qnr#get_num_pools in
 	Printf.printf "Pools: %s\n" n_pools;
 	List.iter (function
-		| (p) ->
+		| p ->
 			begin
 			let n_questions = p#get_num_questions in
 			Printf.printf "\tPool \"%s\"" p#get_name;
 			Printf.printf " with %d question(s):\n" n_questions;
 			List.iter (function
-				| (q) ->
+				| q ->
 					begin
 					Printf.printf "\t\tQuestion: %s\n" q#get_text;
 					Printf.printf "\t\t* %s\n" q#get_correct_answer;
 					List.iter (function
-						| (a) ->
-							Printf.printf "\t\t- %s\n" a
-						| _ -> ())
+						| a ->
+							Printf.printf "\t\t- %s\n" a)
 						q#get_wrong_answers
-					end
-				| _ -> ())
+					end)
 				p#get_questions
-			end
-		| _ -> ())
+			end)
 		pools;;
 
 let ask_questions_binnen qnr =
