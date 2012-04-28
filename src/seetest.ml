@@ -96,6 +96,7 @@ object
 	val mutable about = "(Not set)"
 	val mutable pools = []
 	val mutable display_correct_answer = true
+	val mutable ask_until_correct = true
 
 	method get_date = date
 	method set_date value = date <- value
@@ -106,6 +107,7 @@ object
 	method get_pools = pools
 
 	method should_display_correct_answer = display_correct_answer
+	method should_ask_until_correct = ask_until_correct
 end;;
 
 let load_question pool seq =
@@ -212,7 +214,7 @@ let swap a i j =
     a.(i) <- a.(j);
     a.(j) <- t;;
 
-let shuffle a =
+let shuffle_array a =
 	(* Shuffle an array by swapping each element with a random element. *)
 	(* From: http://www.codecodex.com/wiki/Shuffle_an_array *)
     Array.iteri (fun i _ -> swap a i (Random.int (i+1))) a;;
@@ -222,16 +224,16 @@ let print_question q =
 	let idxCorrectAnswer = ref (-1) in
 	let numAnswers = q#get_num_all_answers in
 	let idxAnswers = Array.init numAnswers (fun i -> i) in
-	shuffle idxAnswers;
+	shuffle_array idxAnswers;
 	let printer idx idxAnswer =
 		begin
-			print_int idx;
+			print_int (idx + 1);
 			print_string ": ";
 			match idxAnswer with
 				| 0 ->
 					begin
 					Printf.printf "%s\n" q#get_correct_answer;
-					idxCorrectAnswer := idx
+					idxCorrectAnswer := idx + 1
 					end
 				| i ->
 					begin
@@ -245,20 +247,34 @@ let print_question q =
 	!idxCorrectAnswer;;
 
 let randomized_iterator qnr =
-	let idxPool = Random.int qnr#get_num_pools in
-	let pool = List.nth qnr#get_pools idxPool in
-	let idxQuestion = Random.int pool#get_num_questions in
-	let q = List.nth pool#get_questions idxQuestion in
-	let idxCorrectAnswer = print_question q in
-	print_string "? ";
-	let choice = read_int () in
-	match choice with
-		| c when c=idxCorrectAnswer -> displayln "Richtig!"
-		| _ ->
-			(
-			displayln "Falsch!";
-			if qnr#should_display_correct_answer then Printf.printf "Richtig ist Antwort %d.\n" idxCorrectAnswer
-			);
+	while true do
+	begin
+		let idxPool = Random.int qnr#get_num_pools in
+		let pool = List.nth qnr#get_pools idxPool in
+		let idxQuestion = Random.int pool#get_num_questions in
+		let q = List.nth pool#get_questions idxQuestion in
+		let ask = ref true in
+		while !ask do
+		begin
+			let idxCorrectAnswer = print_question q in
+			print_string "? ";
+			let choice = read_int () in
+			match choice with
+				| c when c=idxCorrectAnswer ->
+					begin
+					displayln "Richtig!\n";
+					ask := false
+					end
+				| _ ->
+					(
+					displayln "Falsch!";
+					if qnr#should_display_correct_answer then Printf.printf "Richtig ist Antwort %d.\n\n" idxCorrectAnswer;
+					ask := qnr#should_ask_until_correct;
+					);
+		end;
+		done;
+	end;
+	done;
 	();;
 
 let ask_questions_binnen qnr =
