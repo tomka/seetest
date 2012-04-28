@@ -72,6 +72,7 @@ object
 	method get_correct_answer = correct_answer
 	method add_wrong_answer value  = wrong_answers <- value :: wrong_answers
 	method get_wrong_answers = wrong_answers
+	method get_num_all_answers = List.length wrong_answers + 1
 end;;
 
 class question_pool =
@@ -94,6 +95,7 @@ object
 	val mutable date = "(Not set)"
 	val mutable about = "(Not set)"
 	val mutable pools = []
+	val mutable display_correct_answer = true
 
 	method get_date = date
 	method set_date value = date <- value
@@ -102,6 +104,8 @@ object
 	method add_question_pool = pools <- new question_pool :: pools; List.hd pools
 	method get_num_pools = List.length pools
 	method get_pools = pools
+
+	method should_display_correct_answer = display_correct_answer
 end;;
 
 let load_question pool seq =
@@ -201,8 +205,68 @@ let print_questionaire qnr =
 			end)
 		pools;;
 
+let swap a i j =
+	(* Swap two elements of an array *)
+	(* From: http://www.codecodex.com/wiki/Shuffle_an_array *)
+    let t = a.(i) in
+    a.(i) <- a.(j);
+    a.(j) <- t;;
+
+let shuffle a =
+	(* Shuffle an array by swapping each element with a random element. *)
+	(* From: http://www.codecodex.com/wiki/Shuffle_an_array *)
+    Array.iteri (fun i _ -> swap a i (Random.int (i+1))) a;;
+
+let print_question q =
+	Printf.printf "Frage: %s\n\n" q#get_text;
+	let idxCorrectAnswer = ref (-1) in
+	let numAnswers = q#get_num_all_answers in
+	let idxAnswers = Array.init numAnswers (fun i -> i) in
+	shuffle idxAnswers;
+	let printer idx idxAnswer =
+		begin
+			print_int idx;
+			print_string ": ";
+			match idxAnswer with
+				| 0 ->
+					begin
+					Printf.printf "%s\n" q#get_correct_answer;
+					idxCorrectAnswer := idx
+					end
+				| i ->
+					begin
+					let realIdx = i - 1 in
+					let txt = List.nth q#get_wrong_answers realIdx in
+					Printf.printf "%s\n" txt
+					end
+		end in
+	Array.iteri printer idxAnswers;
+	(* Return index of correct answer *)
+	!idxCorrectAnswer;;
+
+let randomized_iterator qnr =
+	let idxPool = Random.int qnr#get_num_pools in
+	let pool = List.nth qnr#get_pools idxPool in
+	let idxQuestion = Random.int pool#get_num_questions in
+	let q = List.nth pool#get_questions idxQuestion in
+	let idxCorrectAnswer = print_question q in
+	print_string "? ";
+	let choice = read_int () in
+	match choice with
+		| c when c=idxCorrectAnswer -> displayln "Richtig!"
+		| _ ->
+			(
+			displayln "Falsch!";
+			if qnr#should_display_correct_answer then Printf.printf "Richtig ist Antwort %d.\n" idxCorrectAnswer
+			);
+	();;
+
 let ask_questions_binnen qnr =
-	displayln "Fragen zum Sportbootführerschein Binnen";;
+	displayln "Fragen zum Sportbootführerschein Binnen";
+	displayln "***************************************";
+	displayln "\n";
+	randomized_iterator qnr;
+	();;
 
 let ask_questions_see () =
 	displayln "Fragen zum Sportbootführerschein See";;
@@ -210,6 +274,7 @@ let ask_questions_see () =
 (* Main entry point *)
 
 let main () =
+	Random.self_init();
 	print_menu ();
 	let mode = get_mode () in
 	if mode=mode_sbf_binnen then
