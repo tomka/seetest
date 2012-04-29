@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# Simple colorizer by means of sed
+#
+# Copyright 2008 by Andreas Schamanek <andreas@...>
+# GPL licensed * Use at your own risk!
+#
+# Usage examples:
+# cat some_file | color.sh white '^From: .*'
+#
+# Notes:
+# Regular expressions need to be suitable for sed
+
+# colors, cf. tput(1) and terminfo(5)
+red=$(tput bold;tput setaf 1) # bright red text
+green=$(tput setaf 2) # dim green text
+yellow=$(tput bold;tput setaf 3) # bright yellow text
+fawn=$(tput setaf 3) ; beige=$fawn # dark yellow text
+blue=$(tput bold;tput setaf 4) # bright blue text
+purple=$(tput setaf 5) ; magenta=$purple # magenta text
+pink=$(tput bold;tput setaf 5) # bright magenta text
+cyan=$(tput bold;tput setaf 6) # bright cyan text
+gray=$(tput setaf 7) # dim white text
+white=$(tput bold;tput setaf 7) # bright white text
+normal=$(tput sgr0) # normal text
+
+# reset variables
+color=''
+regex=''
+# assign parameters from command line
+color=$1
+regex="$2"
+# add the substitute command to the set of rules for SED
+sedrules="$sedrules;s/\($regex\)/${!color}\1$normal/g"
+# call sed with the compiled sedrules to do the main job
+sed -e "$sedrules"
