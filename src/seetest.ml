@@ -28,6 +28,7 @@ let displayln msg =
 (* Mode selection *)
 
 let print_menu () =
+	(* Show the main menu to the user. *)
 	displayln "Bitte wähle ob du den SBF Binnen oder den SBF See testen willst.";
 	displayln "1. SBF Binnen";
 	displayln "2. SBF See";
@@ -36,6 +37,7 @@ let print_menu () =
 	display   "? " ;;
 
 let rec get_mode () =
+	(* Require an input from the user and treat it as choice of the main menu. *)
 	let choice = read_int () in
 	let valid_choice = choice=1 || choice=2 || choice=3 || choice=4 in
 	if valid_choice then
@@ -50,9 +52,6 @@ let start ask qnr =
 	ask qnr;;
 
 (* Support *)
-
-let load_config =
-    ();;
 
 let finish () =
 	displayln "\nFragen beendet";;
@@ -220,6 +219,7 @@ let shuffle_array a =
     Array.iteri (fun i _ -> swap a i (Random.int (i+1))) a;;
 
 let print_question q =
+	(* Prints out a question and returns the index of the correct answer. *)
 	Printf.printf "Frage: %s\n\n" q#get_text;
 	let idxCorrectAnswer = ref (-1) in
 	let numAnswers = q#get_num_all_answers in
@@ -247,6 +247,9 @@ let print_question q =
 	!idxCorrectAnswer;;
 
 let randomized_iterator qnr =
+	(* Walks a questionaire in a random order. While doing this, the user
+	   is prompted for the correct answar to a question. Depending on the
+	   settings a wrong answer leads for asking the linked question again. *)
 	while true do
 	begin
 		let idxPool = Random.int qnr#get_num_pools in
@@ -278,6 +281,8 @@ let randomized_iterator qnr =
 	();;
 
 let ask_questions_binnen qnr =
+	(* Prints out general information about the "Binnen" licence and starts
+	   the asking of questings. *)
 	displayln "Fragen zum Sportbootführerschein Binnen";
 	displayln "***************************************";
 	displayln "\n";
@@ -285,11 +290,14 @@ let ask_questions_binnen qnr =
 	();;
 
 let ask_questions_see () =
+	(* Prints out general information about the "See" licence and starts
+	   the asking of questings. *)
 	displayln "Fragen zum Sportbootführerschein See";;
 
 (* Main entry point *)
 
 let main () =
+	(* The main entry point of the program. *)
 	Random.self_init();
 	print_menu ();
 	let mode = get_mode () in
@@ -312,4 +320,5 @@ let main () =
 	else
 		display "Unbekannte Modusauswahl." ;;
 
+(* call main entry point *)
 main () ;;
