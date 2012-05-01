@@ -1,0 +1,2 @@
+Build dependencies: ocaml, syck, ocaml-syck, ocaml-extlib
+Build command line: ocamlopt -I +syck -I +extlib yaml.cmxa extLib.cmxa seetest.ml -o seetest
