@@ -289,10 +289,14 @@ let ask_questions_binnen qnr =
 	randomized_iterator qnr;
 	();;
 
-let ask_questions_see () =
+let ask_questions_see qnr =
 	(* Prints out general information about the "See" licence and starts
 	   the asking of questings. *)
-	displayln "Fragen zum Sportbootführerschein See";;
+	displayln "Fragen zum Sportbootführerschein See";
+	displayln "***************************************";
+	displayln "\n";
+	randomized_iterator qnr;
+	();;
 
 (* Main entry point *)
 
@@ -309,7 +313,12 @@ let main () =
 		start ask_questions_binnen qnr
 		)
 	else if mode=mode_sbf_see then
-		start ask_questions_see ()
+		(
+		let path = "../data/Fragenkatalog-See-Mai-2012.yaml" in
+		let qnr = new questionaire in
+		load_data path qnr;
+		start ask_questions_see qnr
+		)
 	else if mode=mode_print_qa then
 		let path = "../data/Fragenkatalog-Binnen-Mai-2012.yaml" in
 		let qnr = new questionaire in
